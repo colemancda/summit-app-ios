@@ -96,6 +96,9 @@ final class EventDetailViewController: UITableViewController, ShowActivityIndica
         self.updateUI()
         tableView.tableFooterView = UIView()
         
+        // dont continue if no connectivity
+        guard Reachability.connected else { return }
+        
         // load feedback
         loadAverageRating()
         loadFeedback()
@@ -128,7 +131,9 @@ final class EventDetailViewController: UITableViewController, ShowActivityIndica
     
     @IBAction func share(sender: UIBarButtonItem) {
         
-        let activityViewController = UIActivityViewController(activityItems: [eventDetail.webpageURL], applicationActivities: nil)
+        let message = "Check out this #OpenStack session I’m attending at the #OpenStackSummit!"
+            
+        let activityViewController = UIActivityViewController(activityItems: [message, eventDetail.webpageURL], applicationActivities: nil)
         activityViewController.modalPresentationStyle = .Popover
         activityViewController.popoverPresentationController?.barButtonItem = sender
         self.presentViewController(activityViewController, animated: true, completion: nil)
@@ -337,7 +342,7 @@ final class EventDetailViewController: UITableViewController, ShowActivityIndica
         cell.name = speaker.name
         cell.title = speaker.title
         cell.pictureURL = speaker.pictureURL
-        cell.isModerator = eventDetail.moderator != nil && speaker.identifier == eventDetail.moderator?.identifier
+        cell.isModerator = speaker.isModerator
         
         cell.layoutMargins = UIEdgeInsetsZero
         cell.separatorInset = UIEdgeInsetsZero
@@ -401,7 +406,7 @@ final class EventDetailViewController: UITableViewController, ShowActivityIndica
         
         switch section {
         case .details: return data.count
-        case .speakers: return eventCache.presentation?.speakers.count ?? 0
+        case .speakers: return eventDetail.speakers.count
         case .feedback: return shouldShowReviews ? feedbackList.count : 0
         }
     }
@@ -618,7 +623,7 @@ final class EventDetailViewController: UITableViewController, ShowActivityIndica
             
             let speaker = eventDetail.speakers[indexPath.row]
             
-            let memberVC = MemberProfileViewController(profile: MemberProfileIdentifier(speaker: speaker))
+            let memberVC = MemberProfileViewController(profile: MemberProfileIdentifier.speaker(speaker.identifier))
             
             self.showViewController(memberVC, sender: self)
             
