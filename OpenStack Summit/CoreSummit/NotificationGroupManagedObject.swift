@@ -12,4 +12,31 @@ import CoreData
 public final class NotificationGroupManagedObject: Entity {
     
     @NSManaged public var name: String
+    
+    @NSManaged public var notifications: Set<NotificationManagedObject>
+}
+
+// MARK: - Encoding
+
+extension NotificationGroup: CoreDataDecodable {
+    
+    public init(managedObject: NotificationGroupManagedObject) {
+        
+        self.identifier = managedObject.identifier
+        self.name = managedObject.name
+    }
+}
+
+extension NotificationGroup: CoreDataEncodable {
+    
+    public func save(context: NSManagedObjectContext) throws -> NotificationGroupManagedObject {
+        
+        let managedObject = try cached(context)
+        
+        managedObject.name = name
+        
+        managedObject.didCache()
+        
+        return managedObject
+    }
 }
