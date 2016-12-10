@@ -7,7 +7,7 @@
 //
 
 /// Notifications used internally by OpenStack Summit.
-enum Notification: String {
+enum AppNotification: String {
     
     /// The user signed in.
     case loggedIn

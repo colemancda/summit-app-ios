@@ -15,25 +15,31 @@ final class NotificationGroupsViewController: UITableViewController, NSFetchedRe
     
     // MARK: - Properties
     
-    private lazy var fetchedResultsController: NSFetchedResultsController = {
-       
-        return NSFetchedResultsController(NotificationGroup.self,
-                                          delegate: self,
-                                          predicate: nil,
-                                          sortDescriptors: NotificationGroupManagedObject.sortDescriptors,
-                                          sectionNameKeyPath: nil,
-                                          context: Store.shared.managedObjectContext)
-    }()
+    private var fetchedResultsController: NSFetchedResultsController!
     
     // MARK: - Loading
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
+        configureView()
     }
     
     // MARK: - Private Methods
+    
+    private func configureView() {
+        
+        self.fetchedResultsController = NSFetchedResultsController(NotificationGroup.self,
+                                                                   delegate: self,
+                                                                   predicate: nil,
+                                                                   sortDescriptors: NotificationGroupManagedObject.sortDescriptors,
+                                                                   sectionNameKeyPath: nil,
+                                                                   context: Store.shared.managedObjectContext)
+        
+        try! self.fetchedResultsController.performFetch()
+        
+        self.tableView.reloadData()
+    }
     
     private subscript (indexPath: NSIndexPath) -> NotificationGroup {
         
@@ -119,7 +125,7 @@ final class NotificationGroupsViewController: UITableViewController, NSFetchedRe
         
         switch segue.identifier! {
             
-        case R.segue.notificationGroupsViewController.showNotificationGroup.identifier:
+        case R.segue.notificationGroupsViewController.showNotificationGroup.identifier: 
             
             let destinationViewController = segue.destinationViewController as! UINavigationController
             
