@@ -11,7 +11,7 @@ import UIKit
 import CoreData
 import CoreSummit
 
-final class NotificationGroupsViewController: UITableViewController, NSFetchedResultsControllerDelegate {
+final class NotificationGroupsViewController: UITableViewController, NSFetchedResultsControllerDelegate, RevealViewController {
     
     // MARK: - Properties
     
@@ -21,6 +21,8 @@ final class NotificationGroupsViewController: UITableViewController, NSFetchedRe
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        addMenuButton()
         
         configureView()
     }
@@ -127,9 +129,7 @@ final class NotificationGroupsViewController: UITableViewController, NSFetchedRe
             
         case R.segue.notificationGroupsViewController.showNotificationGroup.identifier: 
             
-            let destinationViewController = segue.destinationViewController as! UINavigationController
-            
-            let groupDetailViewController = destinationViewController.topViewController as! NotificationGroupDetailViewController
+            let groupDetailViewController = segue.destinationViewController as! NotificationGroupDetailViewController
             
             // configure view controller
             

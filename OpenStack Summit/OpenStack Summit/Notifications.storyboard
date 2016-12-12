@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10117" systemVersion="16C60b" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10117" systemVersion="16C63a" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="G1H-dn-TEh">
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
@@ -8,7 +8,7 @@
         <!--Notifications-->
         <scene sceneID="rm1-Gw-hu4">
             <objects>
-                <tableViewController clearsSelectionOnViewWillAppear="NO" id="G1H-dn-TEh" customClass="NotificationGroupsViewController" customModule="OpenStackSummit" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="NotificationGroupsViewController" clearsSelectionOnViewWillAppear="NO" id="G1H-dn-TEh" customClass="NotificationGroupsViewController" customModule="OpenStackSummit" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" id="xbX-aR-eNH">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -31,7 +31,7 @@
                                     </subviews>
                                 </tableViewCellContentView>
                                 <connections>
-                                    <segue destination="qs9-o1-x0z" kind="showDetail" identifier="showNotificationGroup" id="o9f-cm-0CG"/>
+                                    <segue destination="YMO-c1-sQT" kind="showDetail" identifier="showNotificationGroup" id="kTV-0t-sIV"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -41,47 +41,16 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="Notifications" id="QwN-qG-WGN"/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="bYi-nQ-nJG" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1166" y="-54"/>
         </scene>
-        <!--Navigation Controller-->
-        <scene sceneID="Ich-Vl-Vph">
-            <objects>
-                <navigationController id="xw7-sk-cff" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="LLv-VW-OC0">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                    </navigationBar>
-                    <connections>
-                        <segue destination="G1H-dn-TEh" kind="relationship" relationship="rootViewController" id="zxA-Uu-lG1"/>
-                    </connections>
-                </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="bCX-6I-3Lq" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="352" y="-54"/>
-        </scene>
-        <!--Navigation Controller-->
-        <scene sceneID="jTw-aO-qa2">
-            <objects>
-                <navigationController id="qs9-o1-x0z" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="bRN-k3-5S6">
-                        <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                    </navigationBar>
-                    <connections>
-                        <segue destination="YMO-c1-sQT" kind="relationship" relationship="rootViewController" id="HI4-pU-lJT"/>
-                    </connections>
-                </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="qPp-Hg-caE" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="352" y="719"/>
-        </scene>
         <!--Notification Group Name-->
         <scene sceneID="kFA-oo-xAb">
             <objects>
-                <tableViewController id="YMO-c1-sQT" customClass="NotificationGroupDetailViewController" customModule="OpenStackSummit" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="NotificationGroupDetailViewController" id="YMO-c1-sQT" customClass="NotificationGroupDetailViewController" customModule="OpenStackSummit" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="58" sectionHeaderHeight="28" sectionFooterHeight="28" id="wst-yG-v4u">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -118,26 +87,11 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="Notification Group Name" id="YYG-JE-OCD"/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" prompted="NO"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="bDH-E6-Q1S" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1172" y="719"/>
-        </scene>
-        <!--Split View Controller-->
-        <scene sceneID="U8N-h0-c4C">
-            <objects>
-                <splitViewController id="h3Q-CJ-gmi" sceneMemberID="viewController">
-                    <connections>
-                        <segue destination="xw7-sk-cff" kind="relationship" relationship="masterViewController" id="zXW-FR-2st"/>
-                        <segue destination="qs9-o1-x0z" kind="relationship" relationship="detailViewController" id="0lm-Mr-a8t"/>
-                    </connections>
-                </splitViewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="z3E-6N-gMo" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-504" y="197"/>
+            <point key="canvasLocation" x="1940" y="-54"/>
         </scene>
     </scenes>
-    <inferredMetricsTieBreakers>
-        <segue reference="o9f-cm-0CG"/>
-    </inferredMetricsTieBreakers>
 </document>
