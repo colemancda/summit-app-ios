@@ -8,39 +8,60 @@
 
 import struct SwiftFoundation.Date
 
-public extension Event {
+/// The `DataUpdate` version of an `Event`.
+public struct EventDataUpdate: Named {
     
-    /// The `DataUpdate` version of an `Event`.
-    public struct DataUpdate: Named {
-        
-        public let identifier: Identifier
-        
-        public var name: String
-        
-        public var descriptionText: String?
-        
-        public var start: Date
-        
-        public var end: Date
-        
-        public var allowFeedback: Bool
-        
-        public var averageFeedback: Double
-        
-        public var type: Identifier
-        
-        public var summitTypes: [Identifier]
-        
-        public var sponsors: [Identifier]
-        
-        public var tags: [Tag]
-        
-        public var location: Identifier
-        
-        public var presentation: Presentation.DataUpdate
-        
-        //public var trackIdentifier: Identifier
-        
-        public var videos: [Video]
-    }
+    public let identifier: Identifier
+    
+    public let name: String
+    
+    public let descriptionText: String?
+    
+    public let socialDescription: String?
+    
+    public let start: Date
+    
+    public let end: Date
+    
+    public let track: Identifier?
+    
+    public let allowFeedback: Bool
+    
+    public let averageFeedback: Double
+    
+    public let type: Identifier
+    
+    public let sponsors: Set<Company>
+    
+    public let tags: Set<Tag>
+    
+    public let location: Identifier?
+    
+    public let presentation: PresentationDataUpdate
+    
+    public let videos: Set<Video>
+    
+    public let rsvp: String?
+}
+
+// MARK: - Equatable
+
+public func == (lhs: EventDataUpdate, rhs: EventDataUpdate) -> Bool {
+    
+    return lhs.identifier == rhs.identifier
+        && lhs.name == rhs.name
+        && lhs.descriptionText == rhs.descriptionText
+        && lhs.socialDescription == rhs.socialDescription
+        && lhs.start == rhs.start
+        && lhs.end == rhs.end
+        && lhs.track == rhs.track
+        && lhs.allowFeedback == rhs.allowFeedback
+        && lhs.averageFeedback == rhs.averageFeedback
+        && lhs.type == rhs.type
+        && lhs.sponsors == rhs.sponsors
+        && lhs.tags == rhs.tags
+        && lhs.location == rhs.location
+        && lhs.presentation == rhs.presentation
+        && lhs.videos == rhs.videos
+        && lhs.rsvp == rhs.rsvp
 }

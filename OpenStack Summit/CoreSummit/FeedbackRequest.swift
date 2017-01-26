@@ -12,24 +12,15 @@ import AeroGearOAuth2
 
 public extension Store {
     
-    func feedback(summit: Identifier? = nil, event: Identifier, page: Int, objectsPerPage: Int, completion: (ErrorValue<Page<Review>>) -> ()) {
+    func feedback(summit: Identifier, event: Identifier, page: Int, objectsPerPage: Int, completion: (ErrorValue<Page<Review>>) -> ()) {
         
-        let summitID: String
-        
-        if let identifier = summit {
-            
-            summitID = "\(identifier)"
-            
-        } else {
-            
-            summitID = "current"
-        }
-        
-        let URI = "/api/v1/summits/\(summitID)/events/\(event)/feedback?expand=owner&page=\(page)&per_page=\(objectsPerPage)"
+        let URI = "/api/v1/summits/\(summit)/events/\(event)/feedback?expand=owner&page=\(page)&per_page=\(objectsPerPage)"
         
         let URL = environment.configuration.serverURL + URI
         
         let http = self.createHTTP(.ServiceAccount)
+        
+        let context = privateQueueManagedObjectContext
         
         http.GET(URL) { (responseObject, error) in
             
@@ -42,31 +33,31 @@ public extension Store {
                 else { completion(.Error(Error.InvalidResponse)); return }
             
             // cache
-            try! self.realm.write { let _ = page.items.save(self.realm) }
+            try! context.performErrorBlockAndWait {
+                
+                // only cache if event exists
+                guard let _ = try EventManagedObject.find(event, context: context)
+                    else { return }
+                
+                try page.items.save(context)
+                
+                try context.save()
+            }
             
             // success
             completion(.Value(page))
         }
     }
     
-    func averageFeedback(summit: Identifier? = nil, event: Identifier, completion: (ErrorValue<Double>) -> ()) {
+    func averageFeedback(summit: Identifier, event: Identifier, completion: (ErrorValue<Double>) -> ()) {
         
-        let summitID: String
-        
-        if let identifier = summit {
-            
-            summitID = "\(identifier)"
-            
-        } else {
-            
-            summitID = "current"
-        }
-        
-        let URI = "/api/v1/summits/\(summitID)/events/\(event)/published?fields=id,avg_feedback_rate&relations=none"
+        let URI = "/api/v1/summits/\(summit)/events/\(event)/published?fields=id,avg_feedback_rate&relations=none"
         
         let URL = environment.configuration.serverURL + URI
         
         let http = self.createHTTP(.ServiceAccount)
+        
+        let context = privateQueueManagedObjectContext
         
         http.GET(URL) { (responseObject, error) in
             
@@ -76,7 +67,7 @@ public extension Store {
             
             guard let json = JSON.Value(string: responseObject as! String),
                 let jsonObject = json.objectValue,
-                let averageFeedbackJSON = jsonObject[SummitEvent.JSONKey.avg_feedback_rate.rawValue]
+                let averageFeedbackJSON = jsonObject[Event.JSONKey.avg_feedback_rate.rawValue]
                 else { completion(.Error(Error.InvalidResponse)); return }
             
             let averageFeedback: Double
@@ -95,12 +86,14 @@ public extension Store {
             }
                         
             // update cache
-            if let realmEvent = RealmSummitEvent.find(event, realm: self.realm) {
+            try! context.performErrorBlockAndWait {
                 
-                try! self.realm.write {
+                if let managedObject = try EventManagedObject.find(event, context: context) {
                     
-                    realmEvent.averageFeedback = averageFeedback
+                    managedObject.averageFeedback = averageFeedback
                 }
+                
+                try context.save()
             }
             
             // success
@@ -108,20 +101,9 @@ public extension Store {
         }
     }
     
-    func addFeedback(summit: Identifier? = nil, event: Identifier, rate: Int, review: String, completion: (ErrorValue<Identifier>) -> ()) {
+    func addFeedback(summit: Identifier, event: Identifier, rate: Int, review: String, completion: (ErrorValue<Identifier>) -> ()) {
         
-        let summitID: String
-        
-        if let identifier = summit {
-            
-            summitID = "\(identifier)"
-            
-        } else {
-            
-            summitID = "current"
-        }
-        
-        let URI = "/api/v2/summits/\(summitID)/events/\(event)/feedback"
+        let URI = "/api/v2/summits/\(summit)/events/\(event)/feedback"
         
         let URL = environment.configuration.serverURL + URI
         
@@ -131,29 +113,32 @@ public extension Store {
         jsonDictionary["rate"] = rate
         jsonDictionary["note"] = review
         
+        let context = privateQueueManagedObjectContext
+        
         http.POST(URL, parameters: jsonDictionary) { (responseObject, error) in
             
             // forward error
             guard error == nil
                 else { completion(.Error(error!)); return }
             
-            let id = Int(responseObject as! String)!
+            let identifier = Int(responseObject as! String)!
             
             // create new feedback in cache
-            if let member = self.authenticatedMember,
-                let attendee = member.attendeeRole {
+            try! context.performErrorBlockAndWait {
                 
-                let feedback = AttendeeFeedback(identifier: id, rate: rate, review: review, date: Date(), event: event, member: member.id, attendee: attendee.id)
-                
-                try! self.realm.write {
+                if let member = try self.authenticatedMember(context) {
                     
-                    let realmFeedback = feedback.save(self.realm)
+                    let feedback = MemberFeedback(identifier: identifier, rate: rate, review: review, date: Date(), event: event, member: member.identifier)
                     
-                    attendee.feedback.append(realmFeedback)
+                    let managedObject = try feedback.save(context)
+                    
+                    member.feedback.insert(managedObject)
+                    
+                    try context.save()
                 }
             }
             
-            completion(.Value(id))
+            completion(.Value(identifier))
         }
     }
 }

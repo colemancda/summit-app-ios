@@ -10,7 +10,7 @@ import SwiftFoundation
 import UIKit
 import AFHorizontalDayPicker
 import CoreSummit
-import RealmSwift
+import CoreData
 
 class ScheduleViewController: UIViewController, MessageEnabledViewController, ShowActivityIndicatorProtocol, AFHorizontalDayPickerDelegate, UITableViewDelegate, UITableViewDataSource {
     
@@ -24,11 +24,11 @@ class ScheduleViewController: UIViewController, MessageEnabledViewController, Sh
     
     final private(set) var dayEvents = [ScheduleItem]()
     
-    private var pushRegisterInProgress = false
-    
-    private var realmNotificationToken: RealmSwift.NotificationToken!
-    
+    private var addToScheduleInProgress = false
+        
     private var filterObserver: Int?
+    
+    private var didSelectDate = false
     
     // MARK: - Accessors
     
@@ -76,8 +76,6 @@ class ScheduleViewController: UIViewController, MessageEnabledViewController, Sh
         
         stopNotifications()
         
-        realmNotificationToken?.stop()
-        
         if let observer = filterObserver { FilterManager.shared.filter.remove(observer) }
     }
     
@@ -101,9 +99,6 @@ class ScheduleViewController: UIViewController, MessageEnabledViewController, Sh
         // load UI
         loadData()
         
-        // realm notifications
-        realmNotificationToken = Store.shared.realm.addNotificationBlock { (_, _) in self.reloadSchedule() }
-        
         // filter notifications
         filterObserver = FilterManager.shared.filter.observe { _ in self.filterUpdated() }
     }
@@ -119,16 +114,25 @@ class ScheduleViewController: UIViewController, MessageEnabledViewController, Sh
         let event = dayEvents[indexPath.row]
         let scheduled = Store.shared.isEventScheduledByLoggedMember(event: event.id)
         
+        
+        if addToScheduleInProgress {
+            return
+        }
+        
+        addToScheduleInProgress = true
+        
         // update cell
         cell.scheduled = !scheduled
         
-        let completion: ErrorValue<()> -> () = { [weak self] (response) in
+        let completion: ErrorType? -> () = { [weak self] (response) in
             
             guard let controller = self else { return }
             
+            controller.addToScheduleInProgress = false
+            
             switch response {
                 
-            case let .Error(error):
+            case let .Some(error):
                 
                 // restore original value
                 cell.scheduled = scheduled
@@ -136,17 +140,17 @@ class ScheduleViewController: UIViewController, MessageEnabledViewController, Sh
                 // show error
                 controller.showErrorMessage(error as NSError)
                 
-            case .Value(): break
+            case .None: break
             }
         }
         
         if scheduled {
             
-            Store.shared.removeEventFromSchedule(event: event.id, completion: completion)
+            Store.shared.removeEventFromSchedule(event.summit, event: event.id, completion: completion)
             
         } else {
             
-            Store.shared.addEventToSchedule(event: event.id, completion: completion)
+            Store.shared.addEventToSchedule(event.summit, event: event.id, completion: completion)
         }
     }
     
@@ -168,9 +172,9 @@ class ScheduleViewController: UIViewController, MessageEnabledViewController, Sh
     
     func loadData() {
         
-        if let realmSummit = Store.shared.realm.objects(RealmSummit).first {
+        if let summitManagedObject = self.currentSummit {
             
-            let summit = Summit(realmEntity: realmSummit)
+            let summit = Summit(managedObject: summitManagedObject)
             
             self.updateUI(summit)
             
@@ -178,7 +182,7 @@ class ScheduleViewController: UIViewController, MessageEnabledViewController, Sh
             
             self.showActivityIndicator()
             
-            Store.shared.summit { [weak self] (response) in
+            Store.shared.summit(SummitManager.shared.summit.value) { [weak self] (response) in
                 
                 guard let controller = self else { return }
                 
@@ -206,10 +210,12 @@ class ScheduleViewController: UIViewController, MessageEnabledViewController, Sh
     private func updateUI(summit: Summit) {
         
         let scheduleFilter = FilterManager.shared.filter.value
+                
+        let timeZone = NSTimeZone(name: summit.timeZone)!
         
-        self.subscribeToPushChannelsUsingContextIfNotDoneAlready()
+        NSDate.mt_setTimeZone(timeZone)
         
-        self.summitTimeZoneOffset = NSTimeZone(name: summit.timeZone)!.secondsFromGMT
+        self.summitTimeZoneOffset = timeZone.secondsFromGMT
         
         self.startDate = summit.start.toFoundation().mt_dateSecondsAfter(self.summitTimeZoneOffset).mt_startOfCurrentDay()
         self.endDate = summit.end.toFoundation().mt_dateSecondsAfter(self.summitTimeZoneOffset).mt_dateDaysAfter(1)
@@ -220,32 +226,25 @@ class ScheduleViewController: UIViewController, MessageEnabledViewController, Sh
         
         self.availableDates = self.scheduleAvailableDates(from: shoudHidePastTalks ? today : self.startDate, to: self.endDate)
         
-        if self.selectedDate != nil {
-            if self.availableDates.count > 0 {
-                var selected = self.availableDates.first
-                for availableDate in self.availableDates {
-                    if availableDate.mt_isWithinSameDay(today) {
-                        selected = availableDate
-                        break
-                    }
-                }
-                self.selectedDate = selected
-            }
-        }
-        else {
-            if self.availableDates.count > 0 {
-                var selected = self.availableDates.first
-                for availableDate in self.availableDates {
-                    if availableDate.mt_isWithinSameDay(today) {
-                        selected = availableDate
-                        break
-                    }
-                }
-                self.selectedDate = selected
-            }
-            else {
-                self.selectedDate = self.startDate
-            }
+        let summitActive = today.mt_isBetweenDate(self.startDate, andDate: self.endDate)
+        
+        // default start day when summit is inactive
+        
+        let oldSelectedDate = self.selectedDate
+        
+        if let defaultStart = summit.defaultStart?.toFoundation(),
+            let defaultDay = self.availableDates.firstMatching({ $0.mt_isWithinSameDay(defaultStart) })
+            where summitActive == false && self.didSelectDate == false {
+            
+            self.selectedDate = defaultDay
+            
+        } else if self.didSelectDate == false || self.availableDates.contains(self.selectedDate) == false {
+            
+            self.selectedDate = self.availableDates.firstMatching({ $0.mt_isWithinSameDay(today) }) ?? self.availableDates.first
+            
+        } else {
+            
+            self.selectedDate = oldSelectedDate
         }
         
         reloadSchedule()
@@ -347,40 +346,17 @@ class ScheduleViewController: UIViewController, MessageEnabledViewController, Sh
         }
     }
     
-    private func subscribeToPushChannelsUsingContextIfNotDoneAlready() {
+    @inline(__always)
+    private func eventExists(id: Identifier) -> Bool {
         
-        if pushRegisterInProgress {
-            return
-        }
-        
-        pushRegisterInProgress = true
-        
-        if NSUserDefaults.standardUserDefaults().objectForKey("registeredPushNotificationChannels") == nil {
-            
-            PushNotificationsManager.subscribeToPushChannelsUsingContext() { (succeeded: Bool, error: NSError?) in
-                if succeeded {
-                    NSUserDefaults.standardUserDefaults().setObject("true", forKey: "registeredPushNotificationChannels")
-                }
-                self.pushRegisterInProgress = false
-            }
-        }
-    }
-    
-    private func isDataLoaded() -> Bool {
-        
-        return Store.shared.realm.objects(RealmSummit.self).first != nil
-    }
-
-    private func eventExist(id: Identifier) -> Bool {
-        
-        return RealmSummitEvent.find(id, realm: Store.shared.realm) != nil
+        return try! EventManagedObject.find(id, context: Store.shared.managedObjectContext) != nil
     }
     
     private func configure(cell cell: ScheduleTableViewCell, at indexPath: NSIndexPath) {
         
         let index = indexPath.row
         let event = dayEvents[index]
-        
+                
         cell.eventTitle = event.name
         cell.eventType = event.eventType
         cell.time = event.time
@@ -403,18 +379,7 @@ class ScheduleViewController: UIViewController, MessageEnabledViewController, Sh
         // force view load
         let _ = self.view
         
-        let oldSelection = self.selectedDate
-        
         self.loadData()
-        
-        if let firstDate = availableDates.first where firstDate.mt_isAfter(oldSelection) {
-            
-            self.selectedDate = firstDate
-            
-        } else {
-            
-            self.selectedDate = oldSelection
-        }
     }
     
     // MARK: - AFHorizontalDayPickerDelegate
@@ -430,6 +395,8 @@ class ScheduleViewController: UIViewController, MessageEnabledViewController, Sh
     }
     
     func horizontalDayPicker(picker: AFHorizontalDayPicker, didSelectDate date: NSDate) {
+        
+        self.didSelectDate = true
         
         reloadSchedule()
         
@@ -471,7 +438,7 @@ class ScheduleViewController: UIViewController, MessageEnabledViewController, Sh
         
         let scheduleItem = dayEvents[indexPath.row]
         
-        if let _ = RealmSummitEvent.find(scheduleItem.id, realm: Store.shared.realm) {
+        if let _ = try! EventManagedObject.find(scheduleItem.id, context: Store.shared.managedObjectContext) {
             
             let eventDetailVC = R.storyboard.event.eventDetailViewController()!
             
@@ -492,21 +459,27 @@ class ScheduleViewController: UIViewController, MessageEnabledViewController, Sh
         
         NSNotificationCenter.defaultCenter().addObserver(
             self,
-            selector: #selector(ScheduleViewController.loggedIn(_:)),
-            name: Notification.loggedIn.rawValue,
+            selector: #selector(loggedIn),
+            name: Store.Notification.LoggedIn.rawValue,
             object: nil)
         
         NSNotificationCenter.defaultCenter().addObserver(
             self,
-            selector: #selector(ScheduleViewController.loggedOut(_:)),
-            name: Notification.loggedOut.rawValue,
+            selector: #selector(loggedOut),
+            name: Store.Notification.LoggedOut.rawValue,
             object: nil)
+        
+        NSNotificationCenter.defaultCenter().addObserver(
+            self,
+            selector: #selector(managedObjectContextObjectsDidChange),
+            name: NSManagedObjectContextObjectsDidChangeNotification,
+            object: Store.shared.managedObjectContext)
     }
     
     private func stopNotifications() {
         
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: Notification.loggedIn.rawValue, object: nil)
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: Notification.loggedOut.rawValue, object: nil)
+        NSNotificationCenter.defaultCenter().removeObserver(self, name: Store.Notification.LoggedIn.rawValue, object: nil)
+        NSNotificationCenter.defaultCenter().removeObserver(self, name: Store.Notification.LoggedOut.rawValue, object: nil)
     }
     
     @objc private func loggedIn(notification: NSNotification) {
@@ -517,5 +490,10 @@ class ScheduleViewController: UIViewController, MessageEnabledViewController, Sh
     @objc private func loggedOut(notification: NSNotification) {
         
         self.scheduleView.tableView.reloadData()
+    }
+    
+    @objc private func managedObjectContextObjectsDidChange(notification: NSNotification) {
+        
+        self.reloadSchedule()
     }
 }

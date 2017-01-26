@@ -12,7 +12,7 @@ import AeroGearOAuth2
 
 public extension Store {
     
-    func addEventToSchedule(summit: Identifier? = nil, event: Identifier, completion: (ErrorValue<()>) -> ()) {
+    func addEventToSchedule(summit: Identifier? = nil, event: Identifier, completion: (ErrorType?) -> ()) {
         
         let summitID: String
         
@@ -30,33 +30,32 @@ public extension Store {
         let URL = environment.configuration.serverURL + URI
         
         let http = self.createHTTP(.OpenIDGetFormUrlEncoded)
+        
+        let context = privateQueueManagedObjectContext
         
         http.POST(URL, parameters: nil, completionHandler: {(responseObject, error) in
             
             // forward error
             guard error == nil
-                else { completion(.Error(error!)); return }
+                else { completion(error!); return }
             
             // cache
-            if let attendee = self.authenticatedMember?.attendeeRole,
-                let event = RealmSummitEvent.find(event, realm: self.realm) {
+            try! context.performErrorBlockAndWait {
                 
-                try! self.realm.write {
+                if let attendee = try self.authenticatedMember(context)?.attendeeRole,
+                    let eventManagedObject = try EventManagedObject.find(event, context: context) {
                     
-                    let index = attendee.scheduledEvents.indexOf("id = %@", event.id)
+                    attendee.schedule.insert(eventManagedObject)
                     
-                    if (index == nil) {
-                        
-                        attendee.scheduledEvents.append(event)
-                    }
-                    
-                    completion(.Value())
+                    try context.save()
                 }
             }
+            
+            completion(nil)
         })
     }
     
-    func removeEventFromSchedule(summit: Identifier? = nil, event: Identifier, completion: (ErrorValue<()>) -> ()) {
+    func removeEventFromSchedule(summit: Identifier? = nil, event: Identifier, completion: (ErrorType?) -> ()) {
         
         let summitID: String
         
@@ -75,26 +74,27 @@ public extension Store {
         
         let http = self.createHTTP(.OpenIDGetFormUrlEncoded)
         
+        let context = privateQueueManagedObjectContext
+        
         http.DELETE(URL, parameters: nil, completionHandler: {(responseObject, error) in
             
             // forward error
             guard error == nil
-                else { completion(.Error(error!)); return }
+                else { completion(error!); return }
             
             // cache
-            if let attendee = self.authenticatedMember?.attendeeRole,
-                let event = RealmSummitEvent.find(event, realm: self.realm) {
-                
-                try! self.realm.write {
+            try! context.performErrorBlockAndWait {
+                                
+                if let attendee = try self.authenticatedMember(context)?.attendeeRole,
+                    let eventManagedObject = try EventManagedObject.find(event, context: context) {
                     
-                    if let index = attendee.scheduledEvents.indexOf("id = %@", event.id) {
-                        
-                        attendee.scheduledEvents.removeAtIndex(index)
-                    }
+                    attendee.schedule.remove(eventManagedObject)
                     
-                    completion(.Value())
+                    try context.save()
                 }
             }
+            
+            completion(nil)
         })
     }
 }

@@ -12,7 +12,17 @@ public struct EventType: Named {
     
     public var name: String
     
-    //public var color: String
+    public var color: String
     
-    //public var blackOutTimes: Bool
+    public var blackOutTimes: Bool
+}
+
+// MARK: - Equatable
+
+public func == (lhs: EventType, rhs: EventType) -> Bool {
+    
+    return lhs.identifier == rhs.identifier
+        && lhs.name == rhs.name
+        && lhs.color == rhs.color
+        && lhs.blackOutTimes == rhs.blackOutTimes
 }

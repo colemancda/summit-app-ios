@@ -12,3 +12,11 @@ public struct Tag: Named {
     
     public var name: String
 }
+
+// MARK: - Equatable
+
+public func == (lhs: Tag, rhs: Tag) -> Bool {
+    
+    return lhs.identifier == rhs.identifier
+        && lhs.name == rhs.name
+}

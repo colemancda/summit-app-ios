@@ -43,13 +43,19 @@ final class MemberProfileDetailViewController: UIViewController, IndicatorInfoPr
         
         didSet {
             
-            let attrStr = try! NSMutableAttributedString(data: biographyHTML.dataUsingEncoding(NSUnicodeStringEncoding, allowLossyConversion: false)!, options: [NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType], documentAttributes: nil)
-            
-            let range = NSMakeRange(0, attrStr.length)
-            
-            attrStr.addAttribute(NSFontAttributeName, value: UIFont.systemFontOfSize(14), range: range)
-            
-            bioTextView.attributedText = attrStr
+            if let data = biographyHTML.dataUsingEncoding(NSUnicodeStringEncoding, allowLossyConversion: false),
+                let attrStr = try? NSMutableAttributedString(data: data, options: [NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType], documentAttributes: nil) {
+                
+                let range = NSMakeRange(0, attrStr.length)
+                
+                attrStr.addAttribute(NSFontAttributeName, value: UIFont.systemFontOfSize(14), range: range)
+                
+                bioTextView.attributedText = attrStr
+                
+            } else {
+                
+                bioTextView.text = ""
+            }
         }
     }
     
@@ -242,19 +248,13 @@ final class MemberProfileDetailViewController: UIViewController, IndicatorInfoPr
                 
                 if let speakerRole = currentMember.speakerRole {
                     
-                    let person = PresentationSpeaker(realmEntity: speakerRole)
-                    
-                    updateUI(.Value(person))
-                }
-                else if let attendeeRole = currentMember.attendeeRole {
-                    
-                    let person = SummitAttendee(realmEntity: attendeeRole)
+                    let person = Speaker(managedObject: speakerRole)
                     
                     updateUI(.Value(person))
                 }
                 else {
                     
-                    let member = Member(realmEntity: currentMember)
+                    let member = Member(managedObject: currentMember)
                     
                     updateUI(.Value(member))
                 }
@@ -266,11 +266,11 @@ final class MemberProfileDetailViewController: UIViewController, IndicatorInfoPr
         case let .speaker(identifier):
             
             // load speaker from cache
-            if let realmEntity = RealmPresentationSpeaker.find(identifier, realm: Store.shared.realm) {
+            if let speakerManagedObject = try! SpeakerManagedObject.find(identifier, context: Store.shared.managedObjectContext) {
                 
-                let speaker = PresentationSpeaker(realmEntity: realmEntity)
+                let speaker = Speaker(managedObject: speakerManagedObject)
                 
-                let summit = Summit(realmEntity: Store.shared.realm.objects(RealmSummit).first!)
+                let summit = Summit(managedObject: speakerManagedObject.summits.first!)
                 
                 updateUI(.Value(speaker))
                 
@@ -287,12 +287,25 @@ final class MemberProfileDetailViewController: UIViewController, IndicatorInfoPr
                 
             } else {
                 
-                updateUI(.Error(Error.getSpeakerProfile))
+                updateUI(ErrorValue<Speaker>.Error(Error.getSpeakerProfile))
+            }
+            
+        case let .member(identifier):
+            
+            if let member = try! Member.find(identifier, context: Store.shared.managedObjectContext) {
+                
+                self.userActivity = nil
+                
+                updateUI(.Value(member))
+                
+            } else {
+                
+                updateUI(ErrorValue<Member>.Error(Error.getMemberProfile))
             }
         }
     }
     
-    private func updateUI(value: ErrorValue<Person>) {
+    private func updateUI<T: Person>(value: ErrorValue<T>) {
         
         switch value {
             
@@ -302,6 +315,7 @@ final class MemberProfileDetailViewController: UIViewController, IndicatorInfoPr
             
         case let .Value(person):
             
+            self.title = person.name
             self.name = person.name
             self.personTitle = person.title ?? ""
             self.pictureURL = person.pictureURL

@@ -13,8 +13,6 @@ public protocol Person: Named {
     var lastName: String { get }
         
     var pictureURL: String { get }
-        
-    //var email: String { get }
     
     var title: String? { get }
     
@@ -23,9 +21,9 @@ public protocol Person: Named {
     var irc: String? { get }
     
     var biography: String? { get }
-    
-    //var location: String { get } // not sure?
 }
+
+// MARK: - Named
 
 public extension Person {
     

@@ -32,6 +32,7 @@ final class MenuViewController: UIViewController, UITextFieldDelegate, ShowActiv
     @IBOutlet weak var peopleButton: UIButton!
     @IBOutlet weak var myProfileButton: UIButton!
     @IBOutlet weak var aboutButton: UIButton!
+    @IBOutlet weak var teamsButton: UIButton!
     
     @IBOutlet weak var searchTextView: UITextField!
     
@@ -120,21 +121,31 @@ final class MenuViewController: UIViewController, UITextFieldDelegate, ShowActiv
         let item: MenuItem
         
         switch sender {
+            
         case eventsButton:
             showEvents()
             item = .Events
+            
         case venuesButton:
             showVenues()
             item = .Venues
+            
         case peopleButton:
             showSpeakers()
             item = .People
+            
         case myProfileButton:
             showMyProfile()
             item = .MyProfile
+            
         case aboutButton:
             showAbout()
             item = .About
+            
+        case teamsButton:
+            showTeams()
+            item = .Teams
+            
         default: fatalError("Invalid sender \(sender)")
         }
         
@@ -161,7 +172,7 @@ final class MenuViewController: UIViewController, UITextFieldDelegate, ShowActiv
         let currentMemberRole = Store.shared.memberRole
         
         switch (menuItem) {
-        case .MyProfile:
+        case .MyProfile, .Teams:
             return currentMemberRole != .anonymous
         case .Login:
             return currentMemberRole == .anonymous
@@ -177,6 +188,7 @@ final class MenuViewController: UIViewController, UITextFieldDelegate, ShowActiv
         peopleButton.alpha = 0.5
         myProfileButton.alpha = 0.5
         aboutButton.alpha = 0.5
+        teamsButton.alpha = 0.5
     }
     
     private func highlight(item: MenuItem) {
@@ -194,6 +206,8 @@ final class MenuViewController: UIViewController, UITextFieldDelegate, ShowActiv
             myProfileButton.alpha = 1
         case .About:
             aboutButton.alpha = 1
+        case .Teams:
+            teamsButton.alpha = 1
             
         // not applicable
         case .Login: break
@@ -213,6 +227,7 @@ final class MenuViewController: UIViewController, UITextFieldDelegate, ShowActiv
         peopleButton.setTitle("SPEAKERS", forState: .Normal)
         
         myProfileButton.hidden = hasAccess(to: .MyProfile) == false
+        teamsButton.hidden = hasAccess(to: .Teams) == false
     }
     
     @inline(__always)
@@ -222,19 +237,14 @@ final class MenuViewController: UIViewController, UITextFieldDelegate, ShowActiv
     
     private func showUserProfile() {
         
-        if let realmMember = Store.shared.authenticatedMember {
+        if let memberManagedObject = Store.shared.authenticatedMember {
             
-            let currentMember = Member(realmEntity: realmMember)
+            let currentMember = Member(managedObject: memberManagedObject)
             
             if let speaker = currentMember.speakerRole {
                 
                 name = speaker.name
                 pictureURL = speaker.pictureURL
-                
-            } else if let attendee = currentMember.attendeeRole {
-                
-                name = attendee.name
-                pictureURL = attendee.pictureURL
                 
             } else {
                 
@@ -244,7 +254,7 @@ final class MenuViewController: UIViewController, UITextFieldDelegate, ShowActiv
             
         } else if Store.shared.isLoggedIn {
             
-            name = Store.shared.session?.name ?? ""
+            name = Store.shared.session.name ?? ""
             pictureURL = ""
             
         } else {
@@ -279,9 +289,20 @@ final class MenuViewController: UIViewController, UITextFieldDelegate, ShowActiv
     
     func showAbout() {
         
+        highlight(.About)
+        
         let aboutViewController = R.storyboard.menu.aboutViewController()!
         
         show(aboutViewController)
+    }
+    
+    func showTeams() {
+        
+        highlight(.Teams)
+        
+        let teamsViewController = R.storyboard.teams.initialViewController()!
+        
+        show(teamsViewController)
     }
     
     private func showSearch(for term: String) {
@@ -323,15 +344,14 @@ final class MenuViewController: UIViewController, UITextFieldDelegate, ShowActiv
     
     private func login() {
         
-        guard Store.shared.realm.objects(RealmSummit).count > 0 else {
-            
-            showInfoMessage("Info", message: "Summit data is required to log in.")
-            return
-        }
+        let summit = SummitManager.shared.summit.value
+        
+        guard self.isDataLoaded
+            else { showInfoMessage("Info", message: "Summit data is required to log in."); return }
         
         showActivityIndicator()
         
-        Store.shared.login(loginCallback: {
+        Store.shared.login(summit, loginCallback: {
             
             // return from SafariVC
             dispatch_async(dispatch_get_main_queue(), {
@@ -351,11 +371,11 @@ final class MenuViewController: UIViewController, UITextFieldDelegate, ShowActiv
                 
                 switch response {
                     
-                case let .Error(error):
+                case let .Some(error):
                     
                     controller.showErrorMessage(error as NSError)
                     
-                case .Value:
+                case .None:
                     
                     controller.showUserProfile()
                     controller.reloadMenu()
@@ -371,9 +391,11 @@ final class MenuViewController: UIViewController, UITextFieldDelegate, ShowActiv
                     }
                     
                     // log user email
-                    Crashlytics.sharedInstance().setUserEmail(Store.shared.authenticatedMember!.email)
-                    
-                    PushNotificationsManager.subscribeToPushChannelsUsingContext({ (succeeded, error) in })
+                    if let userID = Store.shared.authenticatedMember?.identifier
+                        where AppEnvironment == .Staging {
+                        
+                        Crashlytics.sharedInstance().setUserIdentifier("\(userID)")
+                    }
                 }
             }
         }
@@ -383,16 +405,17 @@ final class MenuViewController: UIViewController, UITextFieldDelegate, ShowActiv
         
         Store.shared.logout()
         
-        Crashlytics.sharedInstance().setUserEmail(nil)
+        // log user email
+        if AppEnvironment == .Staging {
+            
+            Crashlytics.sharedInstance().setUserIdentifier(nil)
+        }
         
         showUserProfile()
         navigateToHome()
         reloadMenu()
         hideMenu()
         hideActivityIndicator()
-        
-        PushNotificationsManager.unsubscribeFromPushChannels { (succeeded, error) in
-        }
     }
     
     // MARK: - SWRevealViewControllerDelegate
@@ -418,7 +441,7 @@ final class MenuViewController: UIViewController, UITextFieldDelegate, ShowActiv
             
             unselectMenuItems()
             
-            guard Store.shared.realm.objects(RealmSummit).count > 0 else {
+            guard try! Store.shared.managedObjectContext.managedObjects(SummitManagedObject).count > 0 else {
                 
                 showInfoMessage("Info", message: "No summit data available")
                 return true
@@ -446,7 +469,7 @@ final class MenuViewController: UIViewController, UITextFieldDelegate, ShowActiv
     @objc private func revokedAccess(notification: NSNotification) {
         
         // logout in case its not cleared
-        Store.shared.session?.clear()
+        Store.shared.session.clear()
         
         showUserProfile()
         navigateToHome()
@@ -466,6 +489,7 @@ enum MenuItem {
     case Events
     case Venues
     case People
-    case MyProfile
     case About
+    case Teams
+    case MyProfile
 }

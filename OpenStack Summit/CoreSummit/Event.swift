@@ -8,39 +8,66 @@
 
 import struct SwiftFoundation.Date
 
-public typealias SummitEvent = Event
-
 public struct Event: Named {
     
     public let identifier: Identifier
     
     public var name: String
     
+    public var summit: Identifier
+    
     public var descriptionText: String?
+    
+    public var socialDescription: String?
     
     public var start: Date
     
     public var end: Date
+        
+    public var track: Identifier?
     
     public var allowFeedback: Bool
     
     public var averageFeedback: Double
     
     public var type: Identifier
+        
+    public var sponsors: Set<Identifier>
     
-    public var summitTypes: [Identifier]
-    
-    public var sponsors: [Identifier]
-    
-    public var tags: [Tag]
+    public var tags: Set<Tag>
         
     public var location: Identifier?
     
-    public var presentation: Presentation?
-        
-    //public var trackIdentifier: Identifier
+    public var presentation: Presentation
     
-    public var videos: [Video]
+    public var videos: Set<Video>
     
     public var rsvp: String?
+    
+    public var groups: Set<Group>
+}
+
+// MARK: - Equatable
+
+public func == (lhs: Event, rhs: Event) -> Bool {
+    
+    return lhs.identifier == rhs.identifier
+        && lhs.summit == rhs.summit
+        && lhs.name == rhs.name
+        && lhs.summit == rhs.summit
+        && lhs.descriptionText == rhs.descriptionText
+        && lhs.socialDescription == rhs.socialDescription
+        && lhs.start == rhs.start
+        && lhs.end == rhs.end
+        && lhs.track == rhs.track
+        && lhs.allowFeedback == rhs.allowFeedback
+        && lhs.averageFeedback == rhs.averageFeedback
+        && lhs.type == rhs.type
+        && lhs.sponsors == rhs.sponsors
+        && lhs.tags == rhs.tags
+        && lhs.location == rhs.location
+        && lhs.presentation == rhs.presentation
+        && lhs.videos == rhs.videos
+        && lhs.rsvp == rhs.rsvp
+        && lhs.groups == rhs.groups
 }

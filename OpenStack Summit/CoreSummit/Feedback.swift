@@ -39,7 +39,7 @@ public struct Review: Feedback {
         
         public let member: Identifier
         
-        public let attendee: Identifier
+        public let attendee: Identifier?
         
         public let firstName: String
         
@@ -47,7 +47,25 @@ public struct Review: Feedback {
     }
 }
 
-public struct AttendeeFeedback: Feedback {
+public func == (lhs: Review, rhs: Review) -> Bool {
+    
+    return lhs.identifier == rhs.identifier
+        && lhs.rate == rhs.rate
+        && lhs.review == rhs.review
+        && lhs.date == rhs.date
+        && lhs.event == lhs.event
+        && lhs.owner == lhs.owner
+}
+
+public func == (lhs: Review.Owner, rhs: Review.Owner) -> Bool {
+    
+    return lhs.member == rhs.member
+        && lhs.attendee == rhs.attendee
+        && lhs.firstName == rhs.firstName
+        && lhs.lastName == rhs.lastName
+}
+
+public struct MemberFeedback: Feedback {
     
     public let identifier: Identifier
     
@@ -60,6 +78,14 @@ public struct AttendeeFeedback: Feedback {
     public var event: Identifier
     
     public let member: Identifier
+}
+
+public func == (lhs: MemberFeedback, rhs: MemberFeedback) -> Bool {
     
-    public let attendee: Identifier
+    return lhs.identifier == rhs.identifier
+        && lhs.rate == rhs.rate
+        && lhs.review == rhs.review
+        && lhs.date == rhs.date
+        && lhs.event == lhs.event
+        && lhs.member == lhs.member
 }

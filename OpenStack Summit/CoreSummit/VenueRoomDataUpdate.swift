@@ -15,14 +15,25 @@ public struct VenueRoomDataUpdate: LocationProtocol {
     
     public let identifier: Identifier
     
-    public var name: String
+    public let name: String
     
-    public var descriptionText: String?
+    public let descriptionText: String?
     
-    public var capacity: Int?
+    public let capacity: Int?
     
-    public var venue: Identifier
+    public let venue: Identifier
     
-    public var floor: VenueFloor
+    public let floor: VenueFloor?
 }
 
+// MARK: - Equatable
+
+public func == (lhs: VenueRoomDataUpdate, rhs: VenueRoomDataUpdate) -> Bool {
+    
+    return lhs.identifier == rhs.identifier
+        && lhs.name == rhs.name
+        && lhs.descriptionText == rhs.descriptionText
+        && lhs.capacity == rhs.capacity
+        && lhs.venue == rhs.venue
+        && lhs.floor == rhs.floor
+}

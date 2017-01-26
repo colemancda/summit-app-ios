@@ -10,32 +10,58 @@ public struct Member: Named {
     
     public let identifier: Identifier
     
-    public var firstName: String
+    public let firstName: String
     
-    public var lastName: String
+    public let lastName: String
     
-    public var pictureURL: String
+    public let gender: String?
+    
+    public let pictureURL: String
         
-    public var twitter: String?
+    public let twitter: String?
     
-    public var irc: String?
+    public let linkedIn: String?
     
-    public var biography: String?
+    public let irc: String?
     
-    //public var friends: [Identifier] // not in JSON
+    public let biography: String?
+        
+    public let speakerRole: Speaker?
     
-    public var speakerRole: PresentationSpeaker?
+    public let attendeeRole: Attendee?
     
-    public var attendeeRole: SummitAttendee?
+    public let groupEvents: Set<Identifier>
+    
+    public let groups: Set<Group>
+    
+    public let feedback: Set<MemberFeedback>
+}
+
+// MARK: - Equatable
+
+public func == (lhs: Member, rhs: Member) -> Bool {
+    
+    return lhs.identifier == rhs.identifier
+        && lhs.firstName == rhs.firstName
+        && lhs.lastName == rhs.lastName
+        && lhs.pictureURL == rhs.pictureURL
+        && lhs.twitter == rhs.twitter
+        && lhs.irc == rhs.irc
+        && lhs.linkedIn == rhs.linkedIn
+        && lhs.speakerRole == rhs.speakerRole
+        && lhs.attendeeRole == rhs.attendeeRole
+        && lhs.groups == rhs.groups
+        && lhs.groupEvents == rhs.groupEvents
 }
 
 // MARK: - Extensions
 
 extension Member: Person {
     
-    public var title: String? { return nil }
+    public var title: String? { return speakerRole?.title }
 }
 
+#if os(iOS)
 public extension Store {
     
     var memberRole: MemberRole {
@@ -63,14 +89,12 @@ public extension Store {
         }
     }
 }
+#endif
 
 // MARK: - Supporting Types
 
-public extension Store {
+public enum MemberRole {
     
-    public enum MemberRole {
-        
-        case anonymous, attendee, speaker, member
-    }
+    case anonymous, attendee, speaker, member
 }
 

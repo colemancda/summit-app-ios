@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import RealmSwift
 import CoreSummit
 
 final class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, RevealViewController, MessageEnabledViewController {
@@ -42,7 +41,7 @@ final class SearchViewController: UIViewController, UITableViewDelegate, UITable
     
     private var events = [ScheduleItem]()
     private var tracks = [Track]()
-    private var speakers = [PresentationSpeaker]()
+    private var speakers = [Speaker]()
     private let objectsPerPage = 1000
     private var pageSpeakers = 1
     private var loadedAllSpeakers = false
@@ -103,7 +102,7 @@ final class SearchViewController: UIViewController, UITableViewDelegate, UITable
             
             cell.scheduled = false
             
-            Store.shared.removeEventFromSchedule(event: event.id) { [weak self] (response) in
+            Store.shared.removeEventFromSchedule(event.summit, event: event.id) { [weak self] (response) in
                 
                 dispatch_async(dispatch_get_main_queue()) {
                     
@@ -113,15 +112,13 @@ final class SearchViewController: UIViewController, UITableViewDelegate, UITable
                     
                     switch response {
                         
-                    case let .Error(error):
+                    case let .Some(error):
                         
                         cell.scheduled = true
                         
-                        controller.showErrorMessage(error as NSError)
+                        controller.showErrorMessage(error)
                         
-                    case .Value:
-                        
-                        break
+                    case .None: break
                     }
                 }
             }
@@ -132,7 +129,7 @@ final class SearchViewController: UIViewController, UITableViewDelegate, UITable
             
             cell.scheduled = true
             
-            Store.shared.addEventToSchedule(event: event.id)  { [weak self] (response) in
+            Store.shared.addEventToSchedule(event.summit, event: event.id)  { [weak self] (response) in
                 
                 dispatch_async(dispatch_get_main_queue()) {
                     
@@ -142,15 +139,13 @@ final class SearchViewController: UIViewController, UITableViewDelegate, UITable
                     
                     switch response {
                         
-                    case let .Error(error):
+                    case let .Some(error):
                         
                         cell.scheduled = false
                         
                         controller.showErrorMessage(error as NSError)
                         
-                    case .Value:
-                        
-                        break
+                    case .None: break
                     }
                 }
             }
@@ -165,9 +160,11 @@ final class SearchViewController: UIViewController, UITableViewDelegate, UITable
         pageSpeakers = 1
         speakers.removeAll()
         
-        events = RealmSummitEvent.search(searchTerm).map { ScheduleItem(realmEntity: $0) }
+        let context = Store.shared.managedObjectContext
+        
+        events = try! ScheduleItem.search(searchTerm, context: context)
         reloadEvents()
-        tracks = Track.search(searchTerm)
+        tracks = try! Track.search(searchTerm, context: context)
         reloadTracks()
         
         getSpeakers()
@@ -198,7 +195,7 @@ final class SearchViewController: UIViewController, UITableViewDelegate, UITable
         
         loadingSpeakers = true
         
-        let speakersPage = PresentationSpeaker.filter(searchTerm, page: pageSpeakers, objectsPerPage: objectsPerPage)
+        let speakersPage = try! Speaker.filter(searchTerm, page: pageSpeakers, objectsPerPage: objectsPerPage, context: Store.shared.managedObjectContext)
         
         defer { self.loadingSpeakers = false }
         
