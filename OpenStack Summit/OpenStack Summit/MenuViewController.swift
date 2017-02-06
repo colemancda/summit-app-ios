@@ -12,7 +12,7 @@ import AeroGearOAuth2
 import CoreSummit
 import Crashlytics
 
-final class MenuViewController: UIViewController, UITextFieldDelegate, ShowActivityIndicatorProtocol, SWRevealViewControllerDelegate, MessageEnabledViewController {
+final class MenuViewController: UIViewController, UITextFieldDelegate, ShowActivityIndicatorProtocol, SWRevealViewControllerDelegate {
     
     // MARK: - Properties
     

@@ -9,7 +9,7 @@
 import UIKit
 import CoreSummit
 
-final class MemberOrderConfirmViewController: UIViewController, RevealViewController, MessageEnabledViewController, ShowActivityIndicatorProtocol, UITextFieldDelegate, UIPickerViewDataSource, UIPickerViewDelegate {
+final class MemberOrderConfirmViewController: UIViewController, RevealViewController, ShowActivityIndicatorProtocol, UITextFieldDelegate, UIPickerViewDataSource, UIPickerViewDelegate {
     
     // MARK: - IB Outlets
     

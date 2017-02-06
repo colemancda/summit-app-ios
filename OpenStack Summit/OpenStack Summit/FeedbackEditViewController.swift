@@ -11,7 +11,7 @@ import SwiftSpinner
 import Cosmos
 import CoreSummit
 
-final class FeedbackEditViewController: UIViewController, UITextViewDelegate, ShowActivityIndicatorProtocol, MessageEnabledViewController {
+final class FeedbackEditViewController: UIViewController, UITextViewDelegate, ShowActivityIndicatorProtocol {
     
     // MARK: - IB Outlets
     

@@ -11,7 +11,7 @@ import UIKit
 import SwiftFoundation
 import CoreSummit
 
-final class SearchMembersViewController: UITableViewController, UISearchBarDelegate, MessageEnabledViewController, ShowActivityIndicatorProtocol {
+final class SearchMembersViewController: UITableViewController, UISearchBarDelegate, ShowActivityIndicatorProtocol {
     
     typealias Scope = MemberListRequest.Filter.Property
     

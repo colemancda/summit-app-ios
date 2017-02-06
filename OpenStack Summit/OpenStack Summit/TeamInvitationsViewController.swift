@@ -12,7 +12,7 @@ import UIKit
 import SwiftFoundation
 import CoreSummit
 
-final class TeamInvitationsViewController: UITableViewController, ShowActivityIndicatorProtocol, MessageEnabledViewController {
+final class TeamInvitationsViewController: UITableViewController, ShowActivityIndicatorProtocol {
     
     typealias Invitation = ListTeamInvitations.Response.Invitation
     

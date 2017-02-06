@@ -9,7 +9,7 @@
 import UIKit
 import CoreSummit
 
-final class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, RevealViewController, MessageEnabledViewController {
+final class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate, RevealViewController {
     
     // MARK: - IB Outlets
 

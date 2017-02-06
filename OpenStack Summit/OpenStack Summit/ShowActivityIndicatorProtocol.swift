@@ -15,6 +15,8 @@ protocol ShowActivityIndicatorProtocol {
     func hideActivityIndicator()
 }
 
+#if os(iOS)
+
 extension ShowActivityIndicatorProtocol {
     
     func showActivityIndicator() {
@@ -27,3 +29,9 @@ extension ShowActivityIndicatorProtocol {
         SwiftSpinner.hide()
     }
 }
+
+#elseif os(tvOS)
+    
+    
+
+#endif

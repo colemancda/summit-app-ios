@@ -10,7 +10,7 @@ import UIKit
 import XLPagerTabStrip
 import CoreSummit
 
-final class VenueListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, MessageEnabledViewController, IndicatorInfoProvider {
+final class VenueListViewController: UIViewController, UITableViewDataSource, UITableViewDelegate,  IndicatorInfoProvider {
     
     // MARK: - IB Outlets
     

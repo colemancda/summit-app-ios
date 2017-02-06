@@ -12,11 +12,11 @@ import CoreData
 import CoreSummit
 import XLPagerTabStrip
 
-final class TeamsViewController: UITableViewController, NSFetchedResultsControllerDelegate, IndicatorInfoProvider, MessageEnabledViewController, ShowActivityIndicatorProtocol, ContextMenuViewController {
+final class TeamsViewController: UITableViewController, PagingTableViewController, IndicatorInfoProvider, ShowActivityIndicatorProtocol, ContextMenuViewController {
     
     // MARK: - Properties
     
-    private lazy var pageController = PageController<Team>(fetch: { Store.shared.teams(page: $0.0, perPage: $0.1, completion: $0.2) })
+    lazy var pageController = PageController<Team>(fetch: { Store.shared.teams(page: $0.0, perPage: $0.1, completion: $0.2) })
     
     lazy var contextMenu: ContextMenu = {
         
@@ -81,60 +81,16 @@ final class TeamsViewController: UITableViewController, NSFetchedResultsControll
     
     // MARK: - Private Methods
     
-    private func willLoadData() {
+    func configure(cell cell: UITableViewCell, with item: Team) {
         
-        if pageController.pages.isEmpty {
-            
-            showActivityIndicator()
-        }
+        cell.textLabel!.text = item.name
+        
+        cell.detailTextLabel!.text = item.descriptionText
     }
     
-    private func didLoadNextPage(response: ErrorValue<[PageControllerChange]>) {
+    func dequeueReusableItemCell(for indexPath: NSIndexPath) -> UITableViewCell {
         
-        self.hideActivityIndicator()
-        
-        self.refreshControl?.endRefreshing()
-        
-        switch response {
-            
-        case let .Error(error):
-            
-            showErrorMessage(error as NSError)
-            
-        case let .Value(changes):
-            
-            tableView.beginUpdates()
-            
-            for change in changes {
-                
-                let indexPath = NSIndexPath(forRow: change.index, inSection: 0)
-                
-                switch change.change {
-                    
-                case .delete:
-                    
-                    tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-                    
-                case .insert:
-                    
-                    tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-                    
-                case .update:
-                    
-                    tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .None)
-                }
-            }
-            
-            tableView.endUpdates()
-        }
-    }
-    
-    @inline(__always)
-    private func configure(cell cell: UITableViewCell, with team: Team) {
-        
-        cell.textLabel!.text = team.name
-        
-        cell.detailTextLabel!.text = team.descriptionText
+        return tableView.dequeueReusableCellWithIdentifier(R.reuseIdentifier.teamCell, forIndexPath: indexPath)!
     }
     
     // MARK: - IndicatorInfoProvider
@@ -142,46 +98,6 @@ final class TeamsViewController: UITableViewController, NSFetchedResultsControll
     func indicatorInfoForPagerTabStrip(pagerTabStripController: PagerTabStripViewController) -> IndicatorInfo {
         
         return IndicatorInfo(title: "Teams")
-    }
-    
-    // MARK: - UITableViewDataSource
-    
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        
-        return 1
-    }
-    
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
-        return pageController.items.count
-    }
-    
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        
-        let data = pageController.items[indexPath.row]
-        
-        switch data {
-            
-        case let .item(item):
-            
-            let cell = tableView.dequeueReusableCellWithIdentifier(R.reuseIdentifier.teamCell)!
-            
-            configure(cell: cell, with: item)
-            
-            return cell
-            
-        case .loading:
-            
-            pageController.loadNextPage()
-            
-            let cell = tableView.dequeueReusableCellWithIdentifier(R.reuseIdentifier.loadingTableViewCell, forIndexPath: indexPath)!
-            
-            cell.activityIndicator.hidden = false
-            
-            cell.activityIndicator.startAnimating()
-            
-            return cell
-        }
     }
     
     // MARK: - Segue

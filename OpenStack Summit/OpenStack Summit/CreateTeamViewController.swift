@@ -12,7 +12,7 @@ import UIKit
 import SwiftFoundation
 import CoreSummit
 
-final class CreateTeamViewController: UITableViewController, ShowActivityIndicatorProtocol, MessageEnabledViewController {
+final class CreateTeamViewController: UITableViewController, ShowActivityIndicatorProtocol {
     
     // MARK: - IB Outlets
     

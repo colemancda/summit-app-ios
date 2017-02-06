@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 import CoreSummit
 
-final class LaunchScreenViewController: UIViewController, MessageEnabledViewController, ShowActivityIndicatorProtocol {
+final class LaunchScreenViewController: UIViewController, ShowActivityIndicatorProtocol {
     
     // MARK: - IB Outlets
     

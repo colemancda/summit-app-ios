@@ -429,6 +429,8 @@
 		6E7FEA321D78AA6200B9E809 /* EventDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E7FEA2E1D78A19000B9E809 /* EventDetail.swift */; };
 		6E7FEA331D78E8D800B9E809 /* YouTubeThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E6AB19D1D650B8C00E940BE /* YouTubeThumbnail.swift */; };
 		6E7FEA341D78E8E000B9E809 /* UserActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3E1E6C1D769E6800F6CB29 /* UserActivity.swift */; };
+		6E8220EC1E48B8DD0025FE58 /* PagingTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E8220EB1E48B8DD0025FE58 /* PagingTableViewController.swift */; };
+		6E8220ED1E48B8DD0025FE58 /* PagingTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E8220EB1E48B8DD0025FE58 /* PagingTableViewController.swift */; };
 		6E8A61051D5279EB001E9C58 /* SelectAttendeeFromOrderListRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E8A61041D5279EB001E9C58 /* SelectAttendeeFromOrderListRequest.swift */; };
 		6E8D0CD31D79CBA7004B435A /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E8D0CD21D79CBA7004B435A /* ImageCache.swift */; };
 		6E8D10991DF87F3B00A0BBDC /* Team.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E8D10981DF87F3B00A0BBDC /* Team.swift */; };
@@ -1095,6 +1097,7 @@
 		6E7E18E91D490DAC009549BA /* Preference.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Preference.swift; sourceTree = "<group>"; };
 		6E7FEA2A1D78959900B9E809 /* VenuesInterfaceController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VenuesInterfaceController.swift; sourceTree = "<group>"; };
 		6E7FEA2E1D78A19000B9E809 /* EventDetail.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventDetail.swift; sourceTree = "<group>"; };
+		6E8220EB1E48B8DD0025FE58 /* PagingTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PagingTableViewController.swift; sourceTree = "<group>"; };
 		6E8A61041D5279EB001E9C58 /* SelectAttendeeFromOrderListRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SelectAttendeeFromOrderListRequest.swift; sourceTree = "<group>"; };
 		6E8D0CD21D79CBA7004B435A /* ImageCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
 		6E8D10981DF87F3B00A0BBDC /* Team.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Team.swift; sourceTree = "<group>"; };
@@ -1785,6 +1788,8 @@
 			children = (
 				6E3E8C271D47E64D00A29003 /* ShowVenueDetail.swift */,
 				6EC417E71D76B60000E5888C /* ShowVideo.swift */,
+				6EB752631D18B77300BC294D /* ErrorAlert.swift */,
+				6E25384C1D1AF5C1003E3400 /* BackBarButtonItem.swift */,
 			);
 			name = Extensions;
 			sourceTree = "<group>";
@@ -1896,6 +1901,15 @@
 			name = Configurations;
 			sourceTree = "<group>";
 		};
+		6E8220EA1E48B86D0025FE58 /* Abstract */ = {
+			isa = PBXGroup;
+			children = (
+				6EF3A88D1E47095100CD85EF /* TableViewController.swift */,
+				6EF3A8901E470BEC00CD85EF /* CollectionViewController.swift */,
+			);
+			name = Abstract;
+			sourceTree = "<group>";
+		};
 		6E99B8A71DC7D66A009CE28D /* CoreData */ = {
 			isa = PBXGroup;
 			children = (
@@ -2005,6 +2019,7 @@
 		6EB699E31D3412B00095474D /* Protocols */ = {
 			isa = PBXGroup;
 			children = (
+				6E8220EB1E48B8DD0025FE58 /* PagingTableViewController.swift */,
 				6EF12C561D14999E00814AD0 /* MessageEnabledViewController.swift */,
 				6EF147EE1D1357CE00D5EEF9 /* ShowActivityIndicatorProtocol.swift */,
 				6E00D1AA1D1C49C200278274 /* RevealViewController.swift */,
@@ -2077,11 +2092,9 @@
 			isa = PBXGroup;
 			children = (
 				6E49054E1D2ED6BD00D56870 /* Appearance.swift */,
-				6E25384C1D1AF5C1003E3400 /* BackBarButtonItem.swift */,
 				9D4DC7FD1D5D2B660015D49A /* CopyableLabel.swift */,
 				6EF12C501D1497E100814AD0 /* UIColor+HexString.swift */,
 				6EF12C511D1497E100814AD0 /* UIView+Border.swift */,
-				6EB752631D18B77300BC294D /* ErrorAlert.swift */,
 				6EF12C541D14997C00814AD0 /* ScheduleableView.swift */,
 				6EF12C581D1499BA00814AD0 /* SweetAlert.swift */,
 				6EFC964E1D22DC320081B3E8 /* TrackTableViewCell.swift */,
@@ -2113,8 +2126,7 @@
 		6EF147ED1D1357A100D5EEF9 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
-				6EF3A88D1E47095100CD85EF /* TableViewController.swift */,
-				6EF3A8901E470BEC00CD85EF /* CollectionViewController.swift */,
+				6E8220EA1E48B86D0025FE58 /* Abstract */,
 				6E3E8C291D47E65300A29003 /* Extensions */,
 				6EB699E31D3412B00095474D /* Protocols */,
 				6E49054C1D2ED21300D56870 /* AboutViewController.swift */,
@@ -3102,6 +3114,7 @@
 				6EAEF7CD1D2C67A700079995 /* GeneralScheduleFilterTableViewCell.swift in Sources */,
 				6EDA4AC01DFA1CEB00ADF96D /* TeamMessagesViewController.swift in Sources */,
 				6E1748B71D37FE0D00C0F25D /* FeedbackGivenListViewController.swift in Sources */,
+				6E8220EC1E48B8DD0025FE58 /* PagingTableViewController.swift in Sources */,
 				6E6AB19E1D650B8C00E940BE /* YouTubeThumbnail.swift in Sources */,
 				6E313C1C1D4127C2005132DA /* InternalVenueListTableViewCell.swift in Sources */,
 				6E066D9B1D356764005A8D2D /* FeedbackDetail.swift in Sources */,
@@ -3532,6 +3545,7 @@
 				6EF3A88C1E46760500CD85EF /* VideosViewController.swift in Sources */,
 				6EA737651E47B4BE00700F64 /* VideoCell.swift in Sources */,
 				6EBE00351D7CB6870091DDEB /* EventsViewController.swift in Sources */,
+				6E8220ED1E48B8DD0025FE58 /* PagingTableViewController.swift in Sources */,
 				6EB54E721D85FCBA0027350D /* ImagesViewController.swift in Sources */,
 				6EB9B8A01D83495C00917077 /* Appearance.swift in Sources */,
 				6E9CDB041D7E72760010D1E1 /* EventDetail.swift in Sources */,

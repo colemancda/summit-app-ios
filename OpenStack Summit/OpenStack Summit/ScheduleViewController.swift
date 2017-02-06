@@ -12,7 +12,7 @@ import AFHorizontalDayPicker
 import CoreSummit
 import CoreData
 
-class ScheduleViewController: UIViewController, MessageEnabledViewController, ShowActivityIndicatorProtocol, AFHorizontalDayPickerDelegate, UITableViewDelegate, UITableViewDataSource {
+class ScheduleViewController: UIViewController, AFHorizontalDayPickerDelegate, ShowActivityIndicatorProtocol, UITableViewDelegate, UITableViewDataSource {
     
     typealias DateFilter = EventManagedObject.DateFilter
     

@@ -12,7 +12,7 @@ import CoreData
 import CoreSummit
 import SwiftFoundation
 
-final class TeamDetailViewController: UITableViewController, NSFetchedResultsControllerDelegate, UITextFieldDelegate, MessageEnabledViewController, ShowActivityIndicatorProtocol {
+final class TeamDetailViewController: UITableViewController, NSFetchedResultsControllerDelegate, UITextFieldDelegate, ShowActivityIndicatorProtocol {
     
     // MARK: - IB Outlets
     

@@ -13,7 +13,7 @@ import CoreSummit
 import Haneke
 import SlackTextViewController
 
-final class TeamMessagesViewController: SLKTextViewController, NSFetchedResultsControllerDelegate, MessageEnabledViewController {
+final class TeamMessagesViewController: SLKTextViewController, NSFetchedResultsControllerDelegate {
     
     // MARK: - Properties
     

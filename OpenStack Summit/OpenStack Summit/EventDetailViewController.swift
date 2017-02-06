@@ -15,7 +15,7 @@ import SwiftFoundation
 import CoreSummit
 import XCDYouTubeKit
     
-final class EventDetailViewController: UITableViewController, ShowActivityIndicatorProtocol, MessageEnabledViewController, TextViewController, ContextMenuViewController {
+final class EventDetailViewController: UITableViewController, ShowActivityIndicatorProtocol,  TextViewController, ContextMenuViewController {
     
     // MARK: - IB Outlets
     

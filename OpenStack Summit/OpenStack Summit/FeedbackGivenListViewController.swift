@@ -10,7 +10,7 @@ import UIKit
 import XLPagerTabStrip
 import CoreSummit
 
-final class FeedbackGivenListViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, MessageEnabledViewController, IndicatorInfoProvider {
+final class FeedbackGivenListViewController: UIViewController, UITableViewDelegate, UITableViewDataSource,  IndicatorInfoProvider {
     
     // MARK: - IB Outlet
     
